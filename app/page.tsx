@@ -1,65 +1,77 @@
-import Image from "next/image";
+import { GraduationCap, Users, BookOpen, UsersRound, TrendingUp, Banknote } from 'lucide-react';
+import StatCard from '@/components/stat-card';
+import { academicYears, subjects, teachers, groups, students, getTotalRevenue, getTeacherCost, sessions } from '@/lib/data';
 
-export default function Home() {
+export default function Dashboard() {
+  const revenue = getTotalRevenue();
+  const cost = getTeacherCost();
+  const profit = revenue - cost;
+  const recentSessions = [...sessions].reverse().slice(0, 5);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+        <StatCard title="السنوات الدراسية" value={academicYears.length} icon={GraduationCap} color="blue" />
+        <StatCard title="المواد" value={subjects.length} icon={BookOpen} color="green" />
+        <StatCard title="المدرسين" value={teachers.length} icon={Users} color="amber" />
+        <StatCard title="المجموعات" value={groups.length} icon={UsersRound} color="rose" />
+        <StatCard title="الطلاب" value={students.length} icon={Users} color="blue" />
+        <StatCard title="إجمالي الحصص" value={sessions.length} icon={TrendingUp} color="green" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard title="إجمالي الإيرادات" value={`${revenue.toLocaleString()} ج`} sub="من كل الحصص" icon={Banknote} color="green" />
+        <StatCard title="مصاريف المدرسين" value={`${cost.toLocaleString()} ج`} sub="مجموع الرواتب" icon={Users} color="amber" />
+        <StatCard title="صافي الربح" value={`${profit.toLocaleString()} ج`} sub="بعد خصم المدرسين" icon={TrendingUp} color="rose" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="rounded-xl border bg-card p-5">
+          <h2 className="font-semibold mb-4">أحدث الحصص</h2>
+          <div className="space-y-2">
+            {recentSessions.map(ses => {
+              const group = groups.find(g => g.id === ses.groupId);
+              return (
+                <div key={ses.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                  <div>
+                    <p className="text-sm font-medium">{group?.name}</p>
+                    <p className="text-xs text-muted-foreground">{ses.date}</p>
+                  </div>
+                  <div className="flex items-center gap-2 text-left">
+                    <span className="text-xs text-green-600 dark:text-green-400">حضر {ses.attendees.length}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${ses.status === 'open' ? 'bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400' : 'bg-muted text-muted-foreground'}`}>
+                      {ses.status === 'open' ? 'مفتوحة' : 'مغلقة'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="rounded-xl border bg-card p-5">
+          <h2 className="font-semibold mb-4">المجموعات الأكثر نشاطاً</h2>
+          <div className="space-y-2">
+            {groups.map(g => {
+              const grpStudents = students.filter(s => s.groupIds.includes(g.id));
+              const grpSessions = sessions.filter(s => s.groupId === g.id);
+              const teacher = teachers.find(t => t.id === g.teacherId);
+              return (
+                <div key={g.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                  <div>
+                    <p className="text-sm font-medium">{g.name}</p>
+                    <p className="text-xs text-muted-foreground">{teacher?.name}</p>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">{grpStudents.length} طالب</p>
+                    <p className="text-xs text-muted-foreground">{grpSessions.length} حصة</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
